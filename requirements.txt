@@ -1,6 +1,6 @@
 streamlit 
 langchain 
-angchain_openai
+langchain_openai
 selenium
 beautifulsoup4
 lxml 

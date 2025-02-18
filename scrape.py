@@ -21,8 +21,9 @@ def get_driver():
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.set_capability('browserless:token', browserlessapi)
 
-    driver = webdriver.Remote(command_executor=REMOTE_SELENIUM_URL, options=options)
+    driver = webdriver.Remote(command_executor='https://chrome.browserless.io/webdriver', options=options)
     return driver
 
 def scrape_website(url):

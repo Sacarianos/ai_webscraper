@@ -1,47 +1,29 @@
 import os
-import subprocess
-import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 
-# Install Chrome and ChromeDriver dynamically
-def install_chrome():
-    if not os.path.exists("/usr/bin/google-chrome"):
-        subprocess.run(
-            "wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb",
-            shell=True,
-            check=True
-        )
-        subprocess.run("dpkg -i google-chrome-stable_current_amd64.deb || apt --fix-broken install -y", shell=True, check=True)
-        subprocess.run("rm google-chrome-stable_current_amd64.deb", shell=True, check=True)
-
-def install_chromedriver():
-    if not os.path.exists("/usr/bin/chromedriver"):
-        subprocess.run("apt update && apt install -y chromium-chromedriver", shell=True, check=True)
-
 def scrape_website(website):
-    print("Installing Chrome and ChromeDriver...")
-    install_chrome()
-    install_chromedriver()
-
     print("Launching browser...")
 
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+    # Use the pre-installed Chrome and ChromeDriver in Streamlit Cloud
+    chrome_path = "/usr/bin/google-chrome"
+    chromedriver_path = "/usr/bin/chromedriver"
 
-    # Use dynamically installed ChromeDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    options = Options()
+    options.binary_location = chrome_path
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    # Launch Chrome with the correct paths
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
     try:
         driver.get(website)
         print("Page loaded...")
-        time.sleep(5)
         html = driver.page_source
         return html
     finally:

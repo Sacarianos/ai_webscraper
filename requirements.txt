@@ -6,5 +6,4 @@ beautifulsoup4
 lxml 
 html5lib
 python-dotenv
-webdriver-manager
 requests

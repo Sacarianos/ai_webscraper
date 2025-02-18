@@ -1,33 +1,28 @@
-import os
-import subprocess
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
+import os
+import dotenv
 
-@st.cache_resource
-def install_chrome():
-    """Installs Chromium & ChromeDriver on Streamlit Cloud."""
-    if not os.path.exists("/usr/bin/chromedriver"):
-        subprocess.run("apt update", shell=True, check=True)
-        subprocess.run("apt install -y chromium-browser chromium-chromedriver", shell=True, check=True)
+dotenv.load_dotenv()
+
+
+browserlessapi = os.getenv("BROWSERLESS_API")
+REMOTE_SELENIUM_URL = f"https://chrome.browserless.io/webdriver?token={browserlessapi}"
+
+
 
 @st.cache_resource
 def get_driver():
-    """Initializes and caches a Selenium WebDriver instance."""
-    install_chrome()  # Ensure Chromium & ChromeDriver are installed
-
+    """Initialize and cache a remote Selenium WebDriver."""
     options = Options()
-    options.binary_location = "/usr/bin/chromium-browser"  # ✅ Use installed Chromium
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    # ✅ Use installed ChromeDriver
-    service = Service("/usr/bin/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Remote(command_executor=REMOTE_SELENIUM_URL, options=options)
     return driver
 
 def scrape_website(url):
@@ -35,10 +30,10 @@ def scrape_website(url):
     driver = get_driver()
     driver.get(url)
     
-    # Extract HTML page source
     html = driver.page_source
     driver.quit()
     return html
+    
 
 def extract_body_content(html_content):
     """Extracts the body content from the HTML."""

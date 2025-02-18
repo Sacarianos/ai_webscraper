@@ -2,23 +2,22 @@ import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 
 @st.cache_resource
 def get_driver():
-    """Initialize and cache a Selenium WebDriver instance with headless Chromium."""
+    """Initialize and cache a Selenium WebDriver instance with Streamlit Cloud's built-in Chromium."""
     options = Options()
-    options.add_argument("--headless")  # Run in headless mode
-    options.add_argument("--disable-gpu")  # Disable GPU acceleration
-    options.add_argument("--no-sandbox")  # Required for running on cloud servers
-    options.add_argument("--disable-dev-shm-usage")  # Avoid shared memory issues
+    options.binary_location = "/usr/bin/chromium-browser"  # ✅ Use system-installed Chromium
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
 
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
-        options=options,
-    )
+    # ✅ Use pre-installed ChromeDriver
+    service = Service("/usr/bin/chromedriver")
+    driver = webdriver.Chrome(service=service, options=options)
+    return driver
 
 def scrape_website(url):
     """Scrapes the given URL and returns its HTML content."""

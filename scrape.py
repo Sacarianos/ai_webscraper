@@ -1,45 +1,49 @@
-import os
+import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
 from bs4 import BeautifulSoup
 
-def scrape_website(website):
-    print("Launching browser...")
-
-    # Use the pre-installed Chrome and ChromeDriver in Streamlit Cloud
-    chrome_path = "/usr/bin/google-chrome"
-    chromedriver_path = "/usr/bin/chromedriver"
-
+@st.cache_resource
+def get_driver():
+    """Initialize and cache a Selenium WebDriver instance with headless Chromium."""
     options = Options()
-    options.binary_location = chrome_path
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--headless")  # Run in headless mode
+    options.add_argument("--disable-gpu")  # Disable GPU acceleration
+    options.add_argument("--no-sandbox")  # Required for running on cloud servers
+    options.add_argument("--disable-dev-shm-usage")  # Avoid shared memory issues
 
-    # Launch Chrome with the correct paths
-    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
+    return webdriver.Chrome(
+        service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
+        options=options,
+    )
 
-    try:
-        driver.get(website)
-        print("Page loaded...")
-        html = driver.page_source
-        return html
-    finally:
-        driver.quit()
+def scrape_website(url):
+    """Scrapes the given URL and returns its HTML content."""
+    driver = get_driver()
+    driver.get(url)
+    
+    # Extract HTML page source
+    html = driver.page_source
+    driver.quit()
+    return html
 
 def extract_body_content(html_content):
+    """Extracts the body content from the HTML."""
     soup = BeautifulSoup(html_content, 'html.parser')
-    body_content = soup.body
-    return str(body_content) if body_content else "No body content found"
+    return str(soup.body) if soup.body else "No body content found"
 
 def clean_body_content(body_content):
+    """Cleans the extracted body content by removing scripts and styles."""
     soup = BeautifulSoup(body_content, 'html.parser')
     for script_or_style in soup(["script", "style"]):
         script_or_style.extract()
+    
     cleaned_content = soup.get_text(separator="\n")
     return "\n".join(line.strip() for line in cleaned_content.split("\n") if line.strip())
 
 def split_dom_content(dom_content, max_length=6000):
+    """Splits the HTML content into smaller chunks for processing."""
     return [dom_content[i:i+max_length] for i in range(0, len(dom_content), max_length)]

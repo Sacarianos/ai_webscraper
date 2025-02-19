@@ -12,15 +12,11 @@ browserlessapi = os.getenv("BROWSERLESS_API")
 REMOTE_SELENIUM_URL = f"https://chrome.browserless.io/webdriver?token={browserlessapi}"
 
 
-
-@st.cache_resource
 def get_driver():
     """Initialize and cache a remote Selenium WebDriver."""
     options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
+    options.add_argument("--headless")   
     options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
     options.set_capability('browserless:token', browserlessapi)
 
     driver = webdriver.Remote(command_executor='https://chrome.browserless.io/webdriver', options=options)

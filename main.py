@@ -22,11 +22,12 @@ st.markdown(
 )
 url = st.text_input("🔗 Website URL")
 
+
+
 # Step 2: Scrape the Website
 if st.button("Scrape Website"):
     if url:
         with st.status("Scraping website... Please wait."):
-        
             result = scrape_website(url)
             body_content = extract_body_content(result)
             cleaned_content = clean_body_content(body_content)
